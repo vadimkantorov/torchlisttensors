@@ -58,7 +58,7 @@ def torchlisttensors(*roots):
             return
         seen.add(fn)
 
-        fmtvarname = lambda varname, saved = False: varname + '_{}_{}'.format(type(fn).__name__, from_var) + ('_SAVED' * saved)
+        fmtvarname = lambda varname, saved = False: varname + '__{}_{}'.format(type(fn).__name__, from_var) + ('_SAVED' * saved)
 
         if True:
             for attr in dir(fn):
@@ -134,10 +134,20 @@ def assign_names(model, name):
         b.__name__ = __name__
     # TODO: also go over tensor attributes, stored in modules
     return model
+    
+def assign_names_hook(module, input, output):
+    __name__ = (module.__name__ if hasattr(module, '__name__') else type(module).__name__) + '_output'
+    if torch.is_tensor(output) and (not hasattr(output, '__name__')):
+        output.__name__ = __name__
+    if isinstance(output, (list, tuple)):
+        for i, output_i in output:
+            if torch.is_tensor(output_i) and (not hasattr(output_i, '__name__')):
+                output_i.__name__ = __name__ + str(i)
 
 if __name__ == '__main__':
     model = torch.nn.Sequential(torch.nn.Linear(20, 20), torch.nn.Linear(20, 20), torch.nn.Linear(20, 20))
     model = assign_names(model, 'model')
+    model.apply(lambda module: module.register_forward_hook(assign_names_hook))
 
     x = torch.zeros(4, 20)
     x.__name__ = 'x'
