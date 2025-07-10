@@ -135,7 +135,7 @@ def assign_names(model, name):
     # TODO: also go over tensor attributes, stored in modules
     return model
     
-def assign_names_hook(module, input, output):
+def assign_names_output_hook(module, input, output):
     __name__ = (module.__name__ if hasattr(module, '__name__') else type(module).__name__) + '_output'
     if torch.is_tensor(output) and (not hasattr(output, '__name__')):
         output.__name__ = __name__
@@ -147,7 +147,7 @@ def assign_names_hook(module, input, output):
 if __name__ == '__main__':
     model = torch.nn.Sequential(torch.nn.Linear(20, 20), torch.nn.Linear(20, 20), torch.nn.Linear(20, 20))
     model = assign_names(model, 'model')
-    model.apply(lambda module: module.register_forward_hook(assign_names_hook))
+    model.apply(lambda module: module.register_forward_hook(assign_names_output_hook))
 
     x = torch.zeros(4, 20)
     x.__name__ = 'x'

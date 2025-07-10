@@ -19,6 +19,7 @@ import torchlisttensors
     
 model = torch.nn.Sequential(torch.nn.Linear(20, 20), torch.nn.Linear(20, 20), torch.nn.Linear(20, 20))
 model = torchlisttensors.assign_names(model, 'model')
+# model.apply(lambda module: module.register_forward_hook(torchlisttensors.assign_names_output_hook))
 
 x = torch.zeros(4, 20)
 x.__name__ = 'x'
