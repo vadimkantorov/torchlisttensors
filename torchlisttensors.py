@@ -132,6 +132,7 @@ def assign_names(model, name):
         p.__name__ = __name__
     for __name__, b in model.named_buffers(prefix = name):
         b.__name__ = __name__
+    # TODO: also go over tensor attributes, stored in modules
     return model
 
 if __name__ == '__main__':
