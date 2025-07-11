@@ -6,7 +6,6 @@ import torch
 def torchlisttensors(*roots):
     # https://github.com/szagoruyko/pytorchviz/blob/0adcd83af8aa7ab36d6afd139cabbd9df598edb7/torchviz/dot.py#L146
 
-    SAVED_PREFIX = "_saved_"
     seen = set()
     nodes = {}
 
@@ -31,21 +30,21 @@ def torchlisttensors(*roots):
 
         fmtvarname = lambda varname, saved = False: varname + '__{}_{}'.format(type(fn).__name__, from_var) + ('_SAVED' * saved)
 
-        if True:
-            for attr in dir(fn):
-                if not attr.startswith(SAVED_PREFIX):
-                    continue
-                val = getattr(fn, attr)
-                seen.add(val)
-                attr = attr[len(SAVED_PREFIX):]
-                if torch.is_tensor(val):
-                    varname = get_var_name(val, attr, from_var = id(fn) )
-                    found_tensor_hook(val, fmtvarname(varname, saved = True))
-                if isinstance(val, tuple):
-                    for i, t in enumerate(val):
-                        if torch.is_tensor(t):
-                            varname = get_var_name(t, attr + '[{}]'.format(i), from_var = id(fn))
-                            found_tensor_hook(t, fmtvarname(varname, saved = True))
+        SAVED_PREFIX = "_saved_"
+        for attr in dir(fn):
+            if not attr.startswith(SAVED_PREFIX):
+                continue
+            val = getattr(fn, attr)
+            seen.add(val)
+            attr = attr[len(SAVED_PREFIX):]
+            if torch.is_tensor(val):
+                varname = get_var_name(val, attr, from_var = id(fn) )
+                found_tensor_hook(val, fmtvarname(varname, saved = True))
+            if isinstance(val, tuple):
+                for i, t in enumerate(val):
+                    if torch.is_tensor(t):
+                        varname = get_var_name(t, attr + '[{}]'.format(i), from_var = id(fn))
+                        found_tensor_hook(t, fmtvarname(varname, saved = True))
 
         if hasattr(fn, 'variable'):
             var = fn.variable
