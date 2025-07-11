@@ -23,35 +23,6 @@ def torchlisttensors(*roots):
                 name = '__' + str(id(var)) + '__'
         return 'shape=({})\tname={}'.format(','.join(map(str, var.shape)), name)
 
-    def get_fn_name(fn, show_attrs, max_attr_chars):
-        name = str(type(fn).__name__)
-        if not show_attrs:
-            return name
-        attrs = dict()
-        for attr in dir(fn):
-            if not attr.startswith(SAVED_PREFIX):
-                continue
-            val = getattr(fn, attr)
-            attr = attr[len(SAVED_PREFIX):]
-            if torch.is_tensor(val):
-                attrs[attr] = "[saved tensor]"
-            elif isinstance(val, tuple) and any(map(torch.is_tensor, val)):
-                attrs[attr] = "[saved tensors]"
-            else:
-                attrs[attr] = str(val)
-        if not attrs:
-            return name
-        max_attr_chars = max(max_attr_chars, 3)
-        col1width = max(map(len, attrs.keys()))
-        col2width = min(max(map(len, map(str, attrs.values()))), max_attr_chars)
-        
-        attrstr = '%-' + str(col1width) + 's: %' + str(col2width)+ 's'
-        truncate = lambda s: s[:col2width - 3] + "..." if len(s) > col2width else s
-        params = '\n'.join(attrstr % (k, truncate(str(v))) for (k, v) in attrs.items())
-        
-        sep = "-" * max(col1width + col2width + 2, len(name))
-        return name + '\n' + sep + '\n' + params
-
     def add_nodes(fn, from_var = None):
         assert not torch.is_tensor(fn)
         if fn in seen:
